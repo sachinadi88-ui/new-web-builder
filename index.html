@@ -5,16 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>AI Website Builder</title>
 
-<!-- Tailwind CDN -->
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
-  body {
-    min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
+body {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 </style>
 </head>
 
@@ -22,82 +21,74 @@
 
 <div class="flex flex-1 overflow-hidden">
 
-  <!-- Sidebar -->
-  <aside class="w-64 bg-white border-r flex flex-col">
+<!-- ================= SIDEBAR ================= -->
+<aside class="w-64 bg-white border-r flex flex-col">
 
-    <!-- Top -->
-    <div class="p-4 border-b">
-      <button id="newProjectBtn"
-        class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
-        + New Project
-      </button>
-    </div>
+  <div class="p-4 border-b">
+    <button id="newProjectBtn"
+      class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+      + New Project
+    </button>
+  </div>
 
-    <!-- Project List -->
-    <div id="projectList" class="flex-1 overflow-y-auto p-2 space-y-2"></div>
+  <div id="projectList" class="flex-1 overflow-y-auto p-2 space-y-2"></div>
 
-    <!-- Bottom Settings -->
-    <div class="p-4 border-t">
-      <button id="settingsBtn" class="text-gray-600 hover:text-black text-xl">⚙️</button>
-    </div>
+  <div class="p-4 border-t">
+    <button id="settingsBtn" class="text-gray-600 hover:text-black text-xl">⚙️</button>
+  </div>
 
-  </aside>
+</aside>
 
-  <!-- Main -->
-  <main class="flex flex-col flex-1 overflow-hidden">
+<!-- ================= MAIN ================= -->
+<main class="flex flex-col flex-1 overflow-hidden">
 
-    <!-- Header -->
-    <header class="flex items-center justify-between bg-white border-b px-4 py-2">
+<header class="flex items-center justify-between bg-white border-b px-4 py-2">
 
-      <div class="flex items-center space-x-2">
-        <span>🔴</span><span>🟡</span><span>🟢</span>
-      </div>
+  <div class="flex space-x-2">
+    <span>🔴</span><span>🟡</span><span>🟢</span>
+  </div>
 
-      <div class="flex space-x-2">
-        <button id="previewBtn" class="px-3 py-1 bg-blue-500 text-white rounded">Preview</button>
-        <button id="codeBtn" class="px-3 py-1 bg-gray-300 rounded">Code</button>
-      </div>
+  <div class="flex space-x-2">
+    <button id="previewBtn" class="px-3 py-1 bg-blue-500 text-white rounded">Preview</button>
+    <button id="codeBtn" class="px-3 py-1 bg-gray-300 rounded">Code</button>
+  </div>
 
-      <button id="downloadBtn" class="bg-green-600 text-white px-3 py-1 rounded">
-        Download
-      </button>
+  <button id="downloadBtn" class="bg-green-600 text-white px-3 py-1 rounded">
+    Download
+  </button>
 
-    </header>
+</header>
 
-    <!-- Content -->
-    <div class="flex-1 overflow-hidden">
+<div class="flex-1 overflow-hidden">
 
-      <!-- Preview -->
-      <iframe id="previewFrame" class="w-full h-full bg-white"></iframe>
+  <iframe id="previewFrame" class="w-full h-full bg-white"></iframe>
 
-      <!-- Code -->
-      <pre id="codeView" class="hidden w-full h-full overflow-auto p-4 text-sm bg-black text-green-400"></pre>
-
-    </div>
-
-    <!-- Footer -->
-    <footer class="border-t bg-white p-3 flex space-x-2 flex-shrink-0">
-      <textarea id="promptInput"
-        class="flex-1 border rounded p-2 resize-none"
-        rows="2"
-        placeholder="Describe your website..."></textarea>
-      <button id="sendBtn"
-        class="bg-blue-600 text-white px-4 rounded">
-        Send
-      </button>
-    </footer>
-
-  </main>
+  <pre id="codeView"
+    class="hidden w-full h-full overflow-auto p-4 text-sm bg-black text-green-400"></pre>
 
 </div>
 
-<!-- Loader -->
+<footer class="border-t bg-white p-3 flex space-x-2 flex-shrink-0">
+  <textarea id="promptInput"
+    class="flex-1 border rounded p-2 resize-none"
+    rows="2"
+    placeholder="Describe your website..."></textarea>
+  <button id="sendBtn"
+    class="bg-blue-600 text-white px-4 rounded">
+    Send
+  </button>
+</footer>
+
+</main>
+</div>
+
+<!-- ================= LOADER ================= -->
 <div id="loader"
   class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
   <div class="bg-white p-6 rounded-lg shadow-lg">Generating...</div>
 </div>
 
-<!-- Settings Modal -->
+<!-- ================= SETTINGS MODAL ================= -->
 <div id="settingsModal"
   class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
@@ -105,15 +96,10 @@
 
     <h2 class="text-lg font-semibold">Settings</h2>
 
-    <input id="apiUrlInput" class="w-full border p-2 rounded"
-      placeholder="API URL" />
-
+    <input id="apiUrlInput" class="w-full border p-2 rounded" />
     <input id="apiKeyInput" type="password"
-      class="w-full border p-2 rounded"
-      placeholder="API Key" />
-
-    <input id="modelInput" class="w-full border p-2 rounded"
-      placeholder="Model ID" />
+      class="w-full border p-2 rounded" />
+    <input id="modelInput" class="w-full border p-2 rounded" />
 
     <div class="flex justify-end space-x-2">
       <button id="saveSettingsBtn"
@@ -126,30 +112,22 @@
 </div>
 
 <script>
-/* =============================
-   SYSTEM PROMPT
-============================= */
+/* ================= SYSTEM PROMPT ================= */
 const SYSTEM_PROMPT =
 "You are a web developer. Output ONLY raw HTML code. No explanations.";
 
-/* =============================
-   DEFAULT SETTINGS
-============================= */
+/* ================= DEFAULT SETTINGS ================= */
 const DEFAULT_SETTINGS = {
   apiUrl: "https://openrouter.ai/api/v1/chat/completions",
   apiKey: "",
   model: "deepseek/deepseek-r1:free"
 };
 
-/* =============================
-   STATE
-============================= */
+/* ================= STATE ================= */
 let projects = JSON.parse(localStorage.getItem("projects") || "[]");
 let currentProjectId = localStorage.getItem("currentProjectId");
 
-/* =============================
-   SETTINGS LOAD
-============================= */
+/* ================= SETTINGS ================= */
 function loadSettings() {
   return JSON.parse(localStorage.getItem("settings") || JSON.stringify(DEFAULT_SETTINGS));
 }
@@ -158,9 +136,7 @@ function saveSettings(settings) {
   localStorage.setItem("settings", JSON.stringify(settings));
 }
 
-/* =============================
-   PROJECT FUNCTIONS
-============================= */
+/* ================= PROJECT FUNCTIONS ================= */
 function saveProjects() {
   localStorage.setItem("projects", JSON.stringify(projects));
 }
@@ -170,10 +146,12 @@ function createProject() {
   const project = {
     id,
     name: "Project " + (projects.length + 1),
-    html: ""
+    html: "",
+    messages: []   // 🔥 Chat history per project
   };
   projects.unshift(project);
   currentProjectId = id;
+  localStorage.setItem("currentProjectId", id);
   saveProjects();
   renderProjects();
   loadCurrentProject();
@@ -184,6 +162,7 @@ function deleteProject(id) {
   if (currentProjectId === id) {
     currentProjectId = projects[0]?.id || null;
   }
+  localStorage.setItem("currentProjectId", currentProjectId);
   saveProjects();
   renderProjects();
   loadCurrentProject();
@@ -205,7 +184,7 @@ function renderProjects() {
 
     div.onclick = () => {
       currentProjectId = p.id;
-      localStorage.setItem("currentProjectId", currentProjectId);
+      localStorage.setItem("currentProjectId", p.id);
       loadCurrentProject();
     };
 
@@ -228,9 +207,7 @@ function loadCurrentProject() {
   updatePreview(project.html);
 }
 
-/* =============================
-   PREVIEW / CODE TOGGLE
-============================= */
+/* ================= PREVIEW ================= */
 const previewFrame = document.getElementById("previewFrame");
 const codeView = document.getElementById("codeView");
 
@@ -249,9 +226,7 @@ document.getElementById("codeBtn").onclick = () => {
   codeView.classList.remove("hidden");
 };
 
-/* =============================
-   DOWNLOAD
-============================= */
+/* ================= DOWNLOAD ================= */
 document.getElementById("downloadBtn").onclick = () => {
   const project = getCurrentProject();
   if (!project) return;
@@ -263,9 +238,7 @@ document.getElementById("downloadBtn").onclick = () => {
   a.click();
 };
 
-/* =============================
-   SEND TO AI
-============================= */
+/* ================= SEND ================= */
 document.getElementById("sendBtn").onclick = async () => {
 
   const prompt = document.getElementById("promptInput").value.trim();
@@ -273,99 +246,16 @@ document.getElementById("sendBtn").onclick = async () => {
 
   const settings = loadSettings();
   if (!settings.apiKey) {
-    alert("Please enter API Key in settings");
+    alert("Enter API key in settings");
     return;
   }
+
+  const project = getCurrentProject();
+  if (!project) return;
 
   document.getElementById("loader").classList.remove("hidden");
 
   try {
 
-    const response = await fetch(settings.apiUrl, {
-      method: "POST",
-      headers: {
-        "Authorization": "Bearer " + settings.apiKey,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: settings.model,
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: prompt }
-        ]
-      })
-    });
-
-    /* ===== Anti-Crash Logic ===== */
-    const text = await response.text();
-
-    if (!response.ok) {
-      alert("API Error: " + text);
-      document.getElementById("loader").classList.add("hidden");
-      return;
-    }
-
-    const data = JSON.parse(text);
-
-    const html =
-      data.choices?.[0]?.message?.content ||
-      "<h1>Error: No HTML returned</h1>";
-
-    const project = getCurrentProject();
-    if (project) {
-      project.html = html;
-      saveProjects();
-    }
-
-    updatePreview(html);
-
-  } catch (err) {
-    alert("Error: " + err.message);
-  }
-
-  document.getElementById("loader").classList.add("hidden");
-};
-
-/* =============================
-   SETTINGS MODAL
-============================= */
-const settingsModal = document.getElementById("settingsModal");
-
-document.getElementById("settingsBtn").onclick = () => {
-  const s = loadSettings();
-  document.getElementById("apiUrlInput").value = s.apiUrl;
-  document.getElementById("apiKeyInput").value = s.apiKey;
-  document.getElementById("modelInput").value = s.model;
-  settingsModal.classList.remove("hidden");
-};
-
-document.getElementById("closeSettingsBtn").onclick = () => {
-  settingsModal.classList.add("hidden");
-};
-
-document.getElementById("saveSettingsBtn").onclick = () => {
-  const settings = {
-    apiUrl: document.getElementById("apiUrlInput").value,
-    apiKey: document.getElementById("apiKeyInput").value,
-    model: document.getElementById("modelInput").value
-  };
-  saveSettings(settings);
-  settingsModal.classList.add("hidden");
-};
-
-/* =============================
-   NEW PROJECT BUTTON
-============================= */
-document.getElementById("newProjectBtn").onclick = createProject;
-
-/* =============================
-   INIT
-============================= */
-if (!projects.length) createProject();
-renderProjects();
-loadCurrentProject();
-
-</script>
-
-</body>
-</html>
+    // Add user message to history
+    project.messages.push({ role: "us
