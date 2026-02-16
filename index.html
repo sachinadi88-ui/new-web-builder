@@ -1,412 +1,371 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Website Builder</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* CRITICAL FIX 3: Mobile View constraints */
-        body {
-            min-height: 100dvh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            margin: 0;
-            background-color: #f3f4f6;
-        }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI Website Builder</title>
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
 
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3b82f6;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .hide { display: none !important; }
-    </style>
+<style>
+  body {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+</style>
 </head>
-<body>
 
-    <div class="flex flex-1 w-full h-full overflow-hidden flex-row">
-        
-        <aside class="w-64 bg-gray-900 text-white flex flex-col flex-shrink-0 transition-all duration-300">
-            <div class="p-4 border-b border-gray-700">
-                <button id="btn-new-project" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded flex items-center justify-center gap-2 transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                    New Project
-                </button>
-            </div>
+<body class="bg-gray-100">
 
-            <div id="projects-list" class="flex-1 overflow-y-auto p-2 space-y-1">
-                </div>
+<div class="flex flex-1 overflow-hidden">
 
-            <div class="p-4 border-t border-gray-700 mt-auto flex-shrink-0">
-                <button id="btn-open-settings" class="w-full flex items-center gap-3 text-gray-300 hover:text-white transition-colors p-2 rounded hover:bg-gray-800">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                    Settings
-                </button>
-            </div>
-        </aside>
+  <!-- Sidebar -->
+  <aside class="w-64 bg-white border-r flex flex-col">
 
-        <main class="flex-1 flex flex-col bg-white overflow-hidden relative w-full">
-            
-            <header class="flex-shrink-0 border-b border-gray-200 bg-gray-50 p-3 flex justify-between items-center">
-                <div class="flex gap-2 items-center">
-                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                    <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
-                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                </div>
-
-                <div class="flex bg-gray-200 p-1 rounded-lg">
-                    <button id="btn-tab-preview" class="px-4 py-1.5 text-sm font-medium rounded-md bg-white shadow-sm text-gray-800 transition-all">Preview</button>
-                    <button id="btn-tab-code" class="px-4 py-1.5 text-sm font-medium rounded-md text-gray-600 hover:text-gray-800 transition-all">Code</button>
-                </div>
-
-                <button id="btn-download" class="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                    <span class="hidden sm:inline">Download HTML</span>
-                </button>
-            </header>
-
-            <div id="content-container" class="flex-1 overflow-hidden relative bg-white">
-                <iframe id="preview-frame" class="w-full h-full border-0 bg-white"></iframe>
-                
-                <pre id="code-view" class="hide w-full h-full p-4 overflow-auto bg-gray-50 text-sm font-mono text-gray-800 m-0"></pre>
-
-                <div id="loader-overlay" class="hide absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center z-10">
-                    <div class="loader mb-4"></div>
-                    <p class="text-gray-600 font-medium animate-pulse">Building your website...</p>
-                </div>
-            </div>
-
-            <footer class="flex-shrink-0 p-4 border-t border-gray-200 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-                <div class="max-w-4xl mx-auto flex gap-3 relative">
-                    <textarea id="prompt-input" rows="1" class="w-full resize-none rounded-xl border border-gray-300 pl-4 pr-14 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" placeholder="Describe the website you want to build... (Shift+Enter for new line)"></textarea>
-                    <button id="btn-send" class="absolute right-2 bottom-2 p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex-shrink-0">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-                    </button>
-                </div>
-            </footer>
-        </main>
+    <!-- Top -->
+    <div class="p-4 border-b">
+      <button id="newProjectBtn"
+        class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+        + New Project
+      </button>
     </div>
 
-    <dialog id="settings-modal" class="bg-transparent p-0 m-auto backdrop:bg-black/50 backdrop:backdrop-blur-sm open:flex flex-col items-center justify-center w-full h-full fixed inset-0 z-50">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 m-4 relative">
-            <h2 class="text-xl font-bold mb-4 text-gray-800">API Settings</h2>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">API URL Endpoint</label>
-                    <input type="text" id="setting-url" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., https://api.openai.com/v1/chat/completions">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">API Key</label>
-                    <input type="password" id="setting-key" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Enter your API Key">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Model ID</label>
-                    <input type="text" id="setting-model" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., gpt-4o, claude-3, etc.">
-                </div>
-            </div>
+    <!-- Project List -->
+    <div id="projectList" class="flex-1 overflow-y-auto p-2 space-y-2"></div>
 
-            <div class="mt-6 flex justify-end gap-3">
-                <button id="btn-close-settings" class="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded transition-colors">Cancel</button>
-                <button id="btn-save-settings" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded transition-colors">Save Settings</button>
-            </div>
-        </div>
-    </dialog>
+    <!-- Bottom Settings -->
+    <div class="p-4 border-t">
+      <button id="settingsBtn" class="text-gray-600 hover:text-black text-xl">⚙️</button>
+    </div>
 
-    <script>
-        /** ==========================================
-         * SYSTEM LOGIC & STATE
-         * ========================================== */
-        const SYSTEM_PROMPT = `You are an expert web developer. Output ONLY raw HTML code representing a complete index.html file. Include inline CSS or Tailwind CSS via CDN. Do not include markdown formatting like \`\`\`html. Start your response exactly with <!DOCTYPE html>.`;
+  </aside>
 
-        // Defaults are now empty to force user configuration
-        const DEFAULT_API_URL = "https://openrouter.ai/api/v1/chat/completions";
-        const DEFAULT_MODEL = "";
+  <!-- Main -->
+  <main class="flex flex-col flex-1 overflow-hidden">
 
-        let appState = {
-            settings: { apiUrl: DEFAULT_API_URL, apiKey: '', modelId: DEFAULT_MODEL },
-            projects: [], 
-            activeProjectId: null
-        };
+    <!-- Header -->
+    <header class="flex items-center justify-between bg-white border-b px-4 py-2">
 
-        /** ==========================================
-         * DOM ELEMENTS
-         * ========================================== */
-        const els = {
-            projectsList: document.getElementById('projects-list'),
-            btnNewProject: document.getElementById('btn-new-project'),
-            btnOpenSettings: document.getElementById('btn-open-settings'),
-            btnSaveSettings: document.getElementById('btn-save-settings'),
-            btnCloseSettings: document.getElementById('btn-close-settings'),
-            modalSettings: document.getElementById('settings-modal'),
-            inputUrl: document.getElementById('setting-url'),
-            inputKey: document.getElementById('setting-key'),
-            inputModel: document.getElementById('setting-model'),
-            btnTabPreview: document.getElementById('btn-tab-preview'),
-            btnTabCode: document.getElementById('btn-tab-code'),
-            btnDownload: document.getElementById('btn-download'),
-            previewFrame: document.getElementById('preview-frame'),
-            codeView: document.getElementById('code-view'),
-            loaderOverlay: document.getElementById('loader-overlay'),
-            promptInput: document.getElementById('prompt-input'),
-            btnSend: document.getElementById('btn-send')
-        };
+      <div class="flex items-center space-x-2">
+        <span>🔴</span><span>🟡</span><span>🟢</span>
+      </div>
 
-        /** ==========================================
-         * INITIALIZATION & LOCAL STORAGE
-         * ========================================== */
-        function init() {
-            const savedState = localStorage.getItem('aiBuilderState');
-            if (savedState) {
-                try {
-                    const parsed = JSON.parse(savedState);
-                    appState.settings = { ...appState.settings, ...parsed.settings };
-                    appState.projects = parsed.projects || [];
-                    appState.activeProjectId = parsed.activeProjectId;
-                } catch (e) { console.error("Corrupt local state"); }
-            }
+      <div class="flex space-x-2">
+        <button id="previewBtn" class="px-3 py-1 bg-blue-500 text-white rounded">Preview</button>
+        <button id="codeBtn" class="px-3 py-1 bg-gray-300 rounded">Code</button>
+      </div>
 
-            if (appState.projects.length === 0) createNewProject();
-            else renderProjects();
+      <button id="downloadBtn" class="bg-green-600 text-white px-3 py-1 rounded">
+        Download
+      </button>
 
-            selectProject(appState.activeProjectId || appState.projects[0].id);
-            setupEventListeners();
-        }
+    </header>
 
-        function saveState() {
-            localStorage.setItem('aiBuilderState', JSON.stringify(appState));
-        }
+    <!-- Content -->
+    <div class="flex-1 overflow-hidden">
 
-        /** ==========================================
-         * PROJECT MANAGEMENT
-         * ========================================== */
-        function createNewProject() {
-            const newId = Date.now().toString();
-            const project = {
-                id: newId,
-                name: `Project ${appState.projects.length + 1}`,
-                history: [],
-                code: ''
-            };
-            appState.projects.unshift(project);
-            saveState();
-            renderProjects();
-            selectProject(newId);
-        }
+      <!-- Preview -->
+      <iframe id="previewFrame" class="w-full h-full bg-white"></iframe>
 
-        function deleteProject(id, event) {
-            event.stopPropagation();
-            appState.projects = appState.projects.filter(p => p.id !== id);
-            
-            if (appState.projects.length === 0) {
-                createNewProject();
-            } else if (appState.activeProjectId === id) {
-                selectProject(appState.projects[0].id);
-            } else {
-                renderProjects();
-                saveState();
-            }
-        }
+      <!-- Code -->
+      <pre id="codeView" class="hidden w-full h-full overflow-auto p-4 text-sm bg-black text-green-400"></pre>
 
-        function selectProject(id) {
-            appState.activeProjectId = id;
-            saveState();
-            renderProjects();
-            const project = appState.projects.find(p => p.id === id);
-            updatePreviewAndCode(project ? project.code : '');
-        }
+    </div>
 
-        /** ==========================================
-         * UI RENDERING
-         * ========================================== */
-        function renderProjects() {
-            els.projectsList.innerHTML = appState.projects.map(p => `
-                <div onclick="selectProject('${p.id}')" class="group flex items-center justify-between p-2 rounded cursor-pointer transition-colors ${p.id === appState.activeProjectId ? 'bg-gray-800 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}">
-                    <span class="truncate text-sm pr-2">${p.name}</span>
-                    <button onclick="deleteProject('${p.id}', event)" class="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition-all p-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                    </button>
-                </div>
-            `).join('');
-        }
+    <!-- Footer -->
+    <footer class="border-t bg-white p-3 flex space-x-2 flex-shrink-0">
+      <textarea id="promptInput"
+        class="flex-1 border rounded p-2 resize-none"
+        rows="2"
+        placeholder="Describe your website..."></textarea>
+      <button id="sendBtn"
+        class="bg-blue-600 text-white px-4 rounded">
+        Send
+      </button>
+    </footer>
 
-        function updatePreviewAndCode(code) {
-            els.codeView.textContent = code;
-            els.previewFrame.srcdoc = code;
-        }
+  </main>
 
-        function setViewTab(tab) {
-            if (tab === 'preview') {
-                els.previewFrame.classList.remove('hide');
-                els.codeView.classList.add('hide');
-                els.btnTabPreview.classList.replace('text-gray-600', 'text-gray-800');
-                els.btnTabPreview.classList.add('bg-white', 'shadow-sm');
-                els.btnTabCode.classList.replace('text-gray-800', 'text-gray-600');
-                els.btnTabCode.classList.remove('bg-white', 'shadow-sm');
-            } else {
-                els.previewFrame.classList.add('hide');
-                els.codeView.classList.remove('hide');
-                els.btnTabCode.classList.replace('text-gray-600', 'text-gray-800');
-                els.btnTabCode.classList.add('bg-white', 'shadow-sm');
-                els.btnTabPreview.classList.replace('text-gray-800', 'text-gray-600');
-                els.btnTabPreview.classList.remove('bg-white', 'shadow-sm');
-            }
-        }
+</div>
 
-        /** ==========================================
-         * API GENERATION LOGIC
-         * ========================================== */
-        async function handleSend() {
-            const prompt = els.promptInput.value.trim();
-            if (!prompt) return;
+<!-- Loader -->
+<div id="loader"
+  class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+  <div class="bg-white p-6 rounded-lg shadow-lg">Generating...</div>
+</div>
 
-            // Updated Validation: Now checks for BOTH URL and Key
-            if (!appState.settings.apiUrl || !appState.settings.apiKey) {
-                alert("Please configure your API URL and API Key in Settings first.");
-                els.inputUrl.value = appState.settings.apiUrl;
-                els.inputKey.value = appState.settings.apiKey;
-                els.inputModel.value = appState.settings.modelId;
-                els.modalSettings.showModal();
-                return;
-            }
+<!-- Settings Modal -->
+<div id="settingsModal"
+  class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
-            const project = appState.projects.find(p => p.id === appState.activeProjectId);
-            if (!project) return;
+  <div class="bg-white p-6 rounded-lg w-96 space-y-3">
 
-            // Update UI state
-            els.promptInput.value = '';
-            els.promptInput.style.height = 'auto'; // reset textarea height
-            els.loaderOverlay.classList.remove('hide');
+    <h2 class="text-lg font-semibold">Settings</h2>
 
-            project.history.push({ role: 'user', content: prompt });
-            if (project.name.startsWith('Project ')) {
-                project.name = prompt.slice(0, 20) + (prompt.length > 20 ? '...' : '');
-                renderProjects();
-            }
+    <input id="apiUrlInput" class="w-full border p-2 rounded"
+      placeholder="API URL" />
 
-            try {
-                // Construct Messages Payload
-                const messages = [
-                    { role: 'system', content: SYSTEM_PROMPT },
-                    ...project.history
-                ];
+    <input id="apiKeyInput" type="password"
+      class="w-full border p-2 rounded"
+      placeholder="API Key" />
 
-                const response = await fetch(appState.settings.apiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${appState.settings.apiKey}`
-                    },
-                    body: JSON.stringify({
-                        model: appState.settings.modelId,
-                        messages: messages,
-                        temperature: 0.2
-                    })
-                });
+    <input id="modelInput" class="w-full border p-2 rounded"
+      placeholder="Model ID" />
 
-                // Anti-Crash JSON Logic (Maintained)
-                const text = await response.text();
-                if (!response.ok) {
-                    alert("API Error: " + text);
-                    project.history.pop(); // Revert history on failure
-                    return; // STOP execution
-                }
+    <div class="flex justify-end space-x-2">
+      <button id="saveSettingsBtn"
+        class="bg-blue-600 text-white px-4 py-1 rounded">Save</button>
+      <button id="closeSettingsBtn"
+        class="bg-gray-300 px-4 py-1 rounded">Close</button>
+    </div>
 
-                // Only parse if response is OK
-                const data = JSON.parse(text);
-                let aiContent = data.choices[0].message.content;
+  </div>
+</div>
 
-                // Strip markdown formatting if AI disobeys prompt
-                aiContent = aiContent.replace(/^```html/im, '').replace(/```$/m, '').trim();
+<script>
+/* =============================
+   SYSTEM PROMPT
+============================= */
+const SYSTEM_PROMPT =
+"You are a web developer. Output ONLY raw HTML code. No explanations.";
 
-                project.history.push({ role: 'assistant', content: aiContent });
-                project.code = aiContent;
-                
-                updatePreviewAndCode(project.code);
-                saveState();
+/* =============================
+   DEFAULT SETTINGS
+============================= */
+const DEFAULT_SETTINGS = {
+  apiUrl: "https://openrouter.ai/api/v1/chat/completions",
+  apiKey: "",
+  model: "deepseek/deepseek-r1:free"
+};
 
-            } catch (error) {
-                console.error("Fetch error:", error);
-                alert("Network or Parsing Error: " + error.message);
-                project.history.pop();
-            } finally {
-                els.loaderOverlay.classList.add('hide');
-            }
-        }
+/* =============================
+   STATE
+============================= */
+let projects = JSON.parse(localStorage.getItem("projects") || "[]");
+let currentProjectId = localStorage.getItem("currentProjectId");
 
-        /** ==========================================
-         * EVENT LISTENERS
-         * ========================================== */
-        function setupEventListeners() {
-            // Sidebar controls
-            els.btnNewProject.addEventListener('click', createNewProject);
+/* =============================
+   SETTINGS LOAD
+============================= */
+function loadSettings() {
+  return JSON.parse(localStorage.getItem("settings") || JSON.stringify(DEFAULT_SETTINGS));
+}
 
-            // Settings Modal
-            els.btnOpenSettings.addEventListener('click', () => {
-                els.inputUrl.value = appState.settings.apiUrl;
-                els.inputKey.value = appState.settings.apiKey;
-                els.inputModel.value = appState.settings.modelId;
-                els.modalSettings.showModal();
-            });
-            els.btnCloseSettings.addEventListener('click', () => els.modalSettings.close());
-            els.btnSaveSettings.addEventListener('click', () => {
-                appState.settings = {
-                    apiUrl: els.inputUrl.value.trim(),
-                    apiKey: els.inputKey.value.trim(),
-                    modelId: els.inputModel.value.trim()
-                };
-                saveState();
-                els.modalSettings.close();
-            });
+function saveSettings(settings) {
+  localStorage.setItem("settings", JSON.stringify(settings));
+}
 
-            // Header Toggles
-            els.btnTabPreview.addEventListener('click', () => setViewTab('preview'));
-            els.btnTabCode.addEventListener('click', () => setViewTab('code'));
+/* =============================
+   PROJECT FUNCTIONS
+============================= */
+function saveProjects() {
+  localStorage.setItem("projects", JSON.stringify(projects));
+}
 
-            // Download Code
-            els.btnDownload.addEventListener('click', () => {
-                const project = appState.projects.find(p => p.id === appState.activeProjectId);
-                if (!project || !project.code) return;
-                const blob = new Blob([project.code], { type: 'text/html' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `website_${project.id}.html`;
-                a.click();
-                URL.revokeObjectURL(url);
-            });
+function createProject() {
+  const id = Date.now().toString();
+  const project = {
+    id,
+    name: "Project " + (projects.length + 1),
+    html: ""
+  };
+  projects.unshift(project);
+  currentProjectId = id;
+  saveProjects();
+  renderProjects();
+  loadCurrentProject();
+}
 
-            // Chat Input Auto-resize & Submission
-            els.promptInput.addEventListener('input', function() {
-                this.style.height = 'auto';
-                this.style.height = (this.scrollHeight < 150 ? this.scrollHeight : 150) + 'px';
-            });
-            
-            els.promptInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSend();
-                }
-            });
+function deleteProject(id) {
+  projects = projects.filter(p => p.id !== id);
+  if (currentProjectId === id) {
+    currentProjectId = projects[0]?.id || null;
+  }
+  saveProjects();
+  renderProjects();
+  loadCurrentProject();
+}
 
-            els.btnSend.addEventListener('click', handleSend);
-        }
+function renderProjects() {
+  const list = document.getElementById("projectList");
+  list.innerHTML = "";
 
-        // Boot
-        init();
-    </script>
+  projects.forEach(p => {
+    const div = document.createElement("div");
+    div.className =
+      "flex justify-between items-center bg-gray-100 p-2 rounded cursor-pointer";
+
+    div.innerHTML = `
+      <span>${p.name}</span>
+      <button class="text-red-500">🗑</button>
+    `;
+
+    div.onclick = () => {
+      currentProjectId = p.id;
+      localStorage.setItem("currentProjectId", currentProjectId);
+      loadCurrentProject();
+    };
+
+    div.querySelector("button").onclick = (e) => {
+      e.stopPropagation();
+      deleteProject(p.id);
+    };
+
+    list.appendChild(div);
+  });
+}
+
+function getCurrentProject() {
+  return projects.find(p => p.id === currentProjectId);
+}
+
+function loadCurrentProject() {
+  const project = getCurrentProject();
+  if (!project) return;
+  updatePreview(project.html);
+}
+
+/* =============================
+   PREVIEW / CODE TOGGLE
+============================= */
+const previewFrame = document.getElementById("previewFrame");
+const codeView = document.getElementById("codeView");
+
+function updatePreview(html) {
+  previewFrame.srcdoc = html || "";
+  codeView.textContent = html || "";
+}
+
+document.getElementById("previewBtn").onclick = () => {
+  previewFrame.classList.remove("hidden");
+  codeView.classList.add("hidden");
+};
+
+document.getElementById("codeBtn").onclick = () => {
+  previewFrame.classList.add("hidden");
+  codeView.classList.remove("hidden");
+};
+
+/* =============================
+   DOWNLOAD
+============================= */
+document.getElementById("downloadBtn").onclick = () => {
+  const project = getCurrentProject();
+  if (!project) return;
+
+  const blob = new Blob([project.html], { type: "text/html" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "index.html";
+  a.click();
+};
+
+/* =============================
+   SEND TO AI
+============================= */
+document.getElementById("sendBtn").onclick = async () => {
+
+  const prompt = document.getElementById("promptInput").value.trim();
+  if (!prompt) return;
+
+  const settings = loadSettings();
+  if (!settings.apiKey) {
+    alert("Please enter API Key in settings");
+    return;
+  }
+
+  document.getElementById("loader").classList.remove("hidden");
+
+  try {
+
+    const response = await fetch(settings.apiUrl, {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + settings.apiKey,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: settings.model,
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: prompt }
+        ]
+      })
+    });
+
+    /* ===== Anti-Crash Logic ===== */
+    const text = await response.text();
+
+    if (!response.ok) {
+      alert("API Error: " + text);
+      document.getElementById("loader").classList.add("hidden");
+      return;
+    }
+
+    const data = JSON.parse(text);
+
+    const html =
+      data.choices?.[0]?.message?.content ||
+      "<h1>Error: No HTML returned</h1>";
+
+    const project = getCurrentProject();
+    if (project) {
+      project.html = html;
+      saveProjects();
+    }
+
+    updatePreview(html);
+
+  } catch (err) {
+    alert("Error: " + err.message);
+  }
+
+  document.getElementById("loader").classList.add("hidden");
+};
+
+/* =============================
+   SETTINGS MODAL
+============================= */
+const settingsModal = document.getElementById("settingsModal");
+
+document.getElementById("settingsBtn").onclick = () => {
+  const s = loadSettings();
+  document.getElementById("apiUrlInput").value = s.apiUrl;
+  document.getElementById("apiKeyInput").value = s.apiKey;
+  document.getElementById("modelInput").value = s.model;
+  settingsModal.classList.remove("hidden");
+};
+
+document.getElementById("closeSettingsBtn").onclick = () => {
+  settingsModal.classList.add("hidden");
+};
+
+document.getElementById("saveSettingsBtn").onclick = () => {
+  const settings = {
+    apiUrl: document.getElementById("apiUrlInput").value,
+    apiKey: document.getElementById("apiKeyInput").value,
+    model: document.getElementById("modelInput").value
+  };
+  saveSettings(settings);
+  settingsModal.classList.add("hidden");
+};
+
+/* =============================
+   NEW PROJECT BUTTON
+============================= */
+document.getElementById("newProjectBtn").onclick = createProject;
+
+/* =============================
+   INIT
+============================= */
+if (!projects.length) createProject();
+renderProjects();
+loadCurrentProject();
+
+</script>
+
 </body>
 </html>
