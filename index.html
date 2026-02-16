@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Website Builder</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
-body {
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+body{
+  min-height:100dvh;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
 }
 </style>
 </head>
@@ -26,7 +26,7 @@ body {
 
   <div class="p-4 border-b">
     <button id="newProjectBtn"
-      class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+      class="w-full bg-blue-600 text-white py-2 rounded-lg">
       + New Project
     </button>
   </div>
@@ -34,7 +34,7 @@ body {
   <div id="projectList" class="flex-1 overflow-y-auto p-2 space-y-2"></div>
 
   <div class="p-4 border-t">
-    <button id="settingsBtn" class="text-gray-600 hover:text-black text-xl">⚙️</button>
+    <button id="settingsBtn" class="text-xl">⚙️</button>
   </div>
 
 </aside>
@@ -44,28 +44,26 @@ body {
 
 <header class="flex items-center justify-between bg-white border-b px-4 py-2">
 
-  <div class="flex space-x-2">
-    <span>🔴</span><span>🟡</span><span>🟢</span>
+  <div class="space-x-1">
+    🔴🟡🟢
   </div>
 
-  <div class="flex space-x-2">
+  <div class="space-x-2">
     <button id="previewBtn" class="px-3 py-1 bg-blue-500 text-white rounded">Preview</button>
     <button id="codeBtn" class="px-3 py-1 bg-gray-300 rounded">Code</button>
   </div>
 
-  <button id="downloadBtn" class="bg-green-600 text-white px-3 py-1 rounded">
+  <button id="downloadBtn"
+    class="bg-green-600 text-white px-3 py-1 rounded">
     Download
   </button>
 
 </header>
 
 <div class="flex-1 overflow-hidden">
-
   <iframe id="previewFrame" class="w-full h-full bg-white"></iframe>
-
   <pre id="codeView"
     class="hidden w-full h-full overflow-auto p-4 text-sm bg-black text-green-400"></pre>
-
 </div>
 
 <footer class="border-t bg-white p-3 flex space-x-2 flex-shrink-0">
@@ -73,6 +71,7 @@ body {
     class="flex-1 border rounded p-2 resize-none"
     rows="2"
     placeholder="Describe your website..."></textarea>
+
   <button id="sendBtn"
     class="bg-blue-600 text-white px-4 rounded">
     Send
@@ -85,10 +84,12 @@ body {
 <!-- ================= LOADER ================= -->
 <div id="loader"
   class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-  <div class="bg-white p-6 rounded-lg shadow-lg">Generating...</div>
+  <div class="bg-white p-6 rounded-lg shadow-lg">
+    Generating...
+  </div>
 </div>
 
-<!-- ================= SETTINGS MODAL ================= -->
+<!-- ================= SETTINGS ================= -->
 <div id="settingsModal"
   class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
@@ -96,166 +97,302 @@ body {
 
     <h2 class="text-lg font-semibold">Settings</h2>
 
-    <input id="apiUrlInput" class="w-full border p-2 rounded" />
-    <input id="apiKeyInput" type="password"
-      class="w-full border p-2 rounded" />
-    <input id="modelInput" class="w-full border p-2 rounded" />
+    <input id="apiUrlInput" class="w-full border p-2 rounded">
+    <input id="apiKeyInput" type="password" class="w-full border p-2 rounded">
+    <input id="modelInput" class="w-full border p-2 rounded">
 
     <div class="flex justify-end space-x-2">
       <button id="saveSettingsBtn"
-        class="bg-blue-600 text-white px-4 py-1 rounded">Save</button>
+        class="bg-blue-600 text-white px-4 py-1 rounded">
+        Save
+      </button>
+
       <button id="closeSettingsBtn"
-        class="bg-gray-300 px-4 py-1 rounded">Close</button>
+        class="bg-gray-300 px-4 py-1 rounded">
+        Close
+      </button>
     </div>
 
   </div>
 </div>
 
 <script>
-/* ================= SYSTEM PROMPT ================= */
+/* ================= SYSTEM ================= */
+
 const SYSTEM_PROMPT =
 "You are a web developer. Output ONLY raw HTML code. No explanations.";
 
-/* ================= DEFAULT SETTINGS ================= */
 const DEFAULT_SETTINGS = {
-  apiUrl: "https://openrouter.ai/api/v1/chat/completions",
-  apiKey: "",
-  model: "deepseek/deepseek-r1:free"
+  apiUrl:"https://openrouter.ai/api/v1/chat/completions",
+  apiKey:"",
+  model:"deepseek/deepseek-r1:free"
 };
 
 /* ================= STATE ================= */
-let projects = JSON.parse(localStorage.getItem("projects") || "[]");
-let currentProjectId = localStorage.getItem("currentProjectId");
 
-/* ================= SETTINGS ================= */
-function loadSettings() {
-  return JSON.parse(localStorage.getItem("settings") || JSON.stringify(DEFAULT_SETTINGS));
+let projects = [];
+let currentProjectId = null;
+
+/* ================= STORAGE SAFE LOAD ================= */
+
+function safeJSON(key, fallback){
+  try{
+    return JSON.parse(localStorage.getItem(key)) || fallback;
+  }catch{
+    return fallback;
+  }
 }
 
-function saveSettings(settings) {
-  localStorage.setItem("settings", JSON.stringify(settings));
+function loadAll(){
+  projects = safeJSON("projects", []);
+  currentProjectId = localStorage.getItem("currentProjectId");
+
+  if(!projects.length){
+    createProject();
+  }
+
+  if(!currentProjectId){
+    currentProjectId = projects[0].id;
+  }
 }
 
-/* ================= PROJECT FUNCTIONS ================= */
-function saveProjects() {
+function saveAll(){
   localStorage.setItem("projects", JSON.stringify(projects));
+  localStorage.setItem("currentProjectId", currentProjectId);
 }
 
-function createProject() {
+/* ================= PROJECT ================= */
+
+function createProject(){
+
   const id = Date.now().toString();
+
   const project = {
     id,
-    name: "Project " + (projects.length + 1),
-    html: "",
-    messages: []   // 🔥 Chat history per project
+    name:"Project "+(projects.length+1),
+    html:"",
+    messages:[]
   };
+
   projects.unshift(project);
   currentProjectId = id;
-  localStorage.setItem("currentProjectId", id);
-  saveProjects();
+
+  saveAll();
   renderProjects();
   loadCurrentProject();
 }
 
-function deleteProject(id) {
-  projects = projects.filter(p => p.id !== id);
-  if (currentProjectId === id) {
-    currentProjectId = projects[0]?.id || null;
+function deleteProject(id){
+
+  projects = projects.filter(p=>p.id!==id);
+
+  if(!projects.length){
+    createProject();
+    return;
   }
-  localStorage.setItem("currentProjectId", currentProjectId);
-  saveProjects();
+
+  if(currentProjectId===id){
+    currentProjectId = projects[0].id;
+  }
+
+  saveAll();
   renderProjects();
   loadCurrentProject();
 }
 
-function renderProjects() {
+function getCurrentProject(){
+  return projects.find(p=>p.id===currentProjectId);
+}
+
+/* ================= RENDER ================= */
+
+function renderProjects(){
+
   const list = document.getElementById("projectList");
-  list.innerHTML = "";
+  list.innerHTML="";
 
-  projects.forEach(p => {
-    const div = document.createElement("div");
-    div.className =
-      "flex justify-between items-center bg-gray-100 p-2 rounded cursor-pointer";
+  projects.forEach(p=>{
 
-    div.innerHTML = `
+    const div=document.createElement("div");
+    div.className="flex justify-between items-center bg-gray-100 p-2 rounded cursor-pointer";
+
+    div.innerHTML=`
       <span>${p.name}</span>
       <button class="text-red-500">🗑</button>
     `;
 
-    div.onclick = () => {
-      currentProjectId = p.id;
-      localStorage.setItem("currentProjectId", p.id);
+    div.onclick=()=>{
+      currentProjectId=p.id;
+      saveAll();
       loadCurrentProject();
     };
 
-    div.querySelector("button").onclick = (e) => {
+    div.querySelector("button").onclick=(e)=>{
       e.stopPropagation();
       deleteProject(p.id);
     };
 
     list.appendChild(div);
+
   });
-}
 
-function getCurrentProject() {
-  return projects.find(p => p.id === currentProjectId);
-}
-
-function loadCurrentProject() {
-  const project = getCurrentProject();
-  if (!project) return;
-  updatePreview(project.html);
 }
 
 /* ================= PREVIEW ================= */
-const previewFrame = document.getElementById("previewFrame");
-const codeView = document.getElementById("codeView");
 
-function updatePreview(html) {
-  previewFrame.srcdoc = html || "";
-  codeView.textContent = html || "";
+const previewFrame=document.getElementById("previewFrame");
+const codeView=document.getElementById("codeView");
+
+function loadCurrentProject(){
+  const project=getCurrentProject();
+  if(!project) return;
+  updatePreview(project.html);
 }
 
-document.getElementById("previewBtn").onclick = () => {
+function updatePreview(html){
+  previewFrame.srcdoc=html||"";
+  codeView.textContent=html||"";
+}
+
+/* ================= TOGGLE ================= */
+
+document.getElementById("previewBtn").onclick=()=>{
   previewFrame.classList.remove("hidden");
   codeView.classList.add("hidden");
 };
 
-document.getElementById("codeBtn").onclick = () => {
+document.getElementById("codeBtn").onclick=()=>{
   previewFrame.classList.add("hidden");
   codeView.classList.remove("hidden");
 };
 
 /* ================= DOWNLOAD ================= */
-document.getElementById("downloadBtn").onclick = () => {
-  const project = getCurrentProject();
-  if (!project) return;
 
-  const blob = new Blob([project.html], { type: "text/html" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "index.html";
+document.getElementById("downloadBtn").onclick=()=>{
+  const project=getCurrentProject();
+  if(!project) return;
+
+  const blob=new Blob([project.html],{type:"text/html"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="index.html";
   a.click();
 };
 
+/* ================= SETTINGS ================= */
+
+function loadSettings(){
+  return safeJSON("settings", DEFAULT_SETTINGS);
+}
+
+function saveSettings(s){
+  localStorage.setItem("settings", JSON.stringify(s));
+}
+
+const settingsModal=document.getElementById("settingsModal");
+
+document.getElementById("settingsBtn").onclick=()=>{
+
+  const s=loadSettings();
+
+  document.getElementById("apiUrlInput").value=s.apiUrl;
+  document.getElementById("apiKeyInput").value=s.apiKey;
+  document.getElementById("modelInput").value=s.model;
+
+  settingsModal.classList.remove("hidden");
+};
+
+document.getElementById("closeSettingsBtn").onclick=()=>{
+  settingsModal.classList.add("hidden");
+};
+
+document.getElementById("saveSettingsBtn").onclick=()=>{
+
+  const s={
+    apiUrl:document.getElementById("apiUrlInput").value,
+    apiKey:document.getElementById("apiKeyInput").value,
+    model:document.getElementById("modelInput").value
+  };
+
+  saveSettings(s);
+  settingsModal.classList.add("hidden");
+};
+
 /* ================= SEND ================= */
-document.getElementById("sendBtn").onclick = async () => {
 
-  const prompt = document.getElementById("promptInput").value.trim();
-  if (!prompt) return;
+document.getElementById("sendBtn").onclick=async()=>{
 
-  const settings = loadSettings();
-  if (!settings.apiKey) {
+  const prompt=document.getElementById("promptInput").value.trim();
+  if(!prompt) return;
+
+  const settings=loadSettings();
+  if(!settings.apiKey){
     alert("Enter API key in settings");
     return;
   }
 
-  const project = getCurrentProject();
-  if (!project) return;
+  const project=getCurrentProject();
+  if(!project) return;
 
-  document.getElementById("loader").classList.remove("hidden");
+  const loader=document.getElementById("loader");
+  loader.classList.remove("hidden");
 
-  try {
+  try{
 
-    // Add user message to history
-    project.messages.push({ role: "us
+    project.messages.push({role:"user",content:prompt});
+
+    const response=await fetch(settings.apiUrl,{
+      method:"POST",
+      headers:{
+        "Authorization":"Bearer "+settings.apiKey,
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({
+        model:settings.model,
+        messages:[
+          {role:"system",content:SYSTEM_PROMPT},
+          ...project.messages
+        ]
+      })
+    });
+
+    /* ===== Anti Crash ===== */
+    const text=await response.text();
+
+    if(!response.ok){
+      alert("API Error: "+text);
+      loader.classList.add("hidden");
+      return;
+    }
+
+    const data=JSON.parse(text);
+
+    const html=data.choices?.[0]?.message?.content || "<h1>No HTML</h1>";
+
+    project.messages.push({role:"assistant",content:html});
+    project.html=html;
+
+    saveAll();
+    updatePreview(html);
+
+  }catch(err){
+    alert("Error: "+err.message);
+  }
+
+  loader.classList.add("hidden");
+};
+
+/* ================= EVENTS ================= */
+
+document.getElementById("newProjectBtn").onclick=createProject;
+
+/* ================= INIT ================= */
+
+loadAll();
+renderProjects();
+loadCurrentProject();
+
+</script>
+
+</body>
+</html>
