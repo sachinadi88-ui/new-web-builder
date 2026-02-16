@@ -106,16 +106,16 @@
             
             <div class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">API URL</label>
-                    <input type="text" id="setting-url" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">API URL Endpoint</label>
+                    <input type="text" id="setting-url" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., https://api.openai.com/v1/chat/completions">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">API Key</label>
-                    <input type="password" id="setting-key" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="sk-or-v1-...">
+                    <input type="password" id="setting-key" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Enter your API Key">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Model ID</label>
-                    <input type="text" id="setting-model" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                    <input type="text" id="setting-model" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g., gpt-4o, claude-3, etc.">
                 </div>
             </div>
 
@@ -132,13 +132,13 @@
          * ========================================== */
         const SYSTEM_PROMPT = `You are an expert web developer. Output ONLY raw HTML code representing a complete index.html file. Include inline CSS or Tailwind CSS via CDN. Do not include markdown formatting like \`\`\`html. Start your response exactly with <!DOCTYPE html>.`;
 
-        // Default Config per requirements
-        const DEFAULT_API_URL = "https://openrouter.ai/api/v1/chat/completions";
-        const DEFAULT_MODEL = "deepseek/deepseek-r1:free";
+        // Defaults are now empty to force user configuration
+        const DEFAULT_API_URL = "";
+        const DEFAULT_MODEL = "";
 
         let appState = {
             settings: { apiUrl: DEFAULT_API_URL, apiKey: '', modelId: DEFAULT_MODEL },
-            projects: [], // { id, name, history: [], code: '' }
+            projects: [], 
             activeProjectId: null
         };
 
@@ -273,8 +273,12 @@
             const prompt = els.promptInput.value.trim();
             if (!prompt) return;
 
-            if (!appState.settings.apiKey) {
-                alert("Please configure your API key in Settings first.");
+            // Updated Validation: Now checks for BOTH URL and Key
+            if (!appState.settings.apiUrl || !appState.settings.apiKey) {
+                alert("Please configure your API URL and API Key in Settings first.");
+                els.inputUrl.value = appState.settings.apiUrl;
+                els.inputKey.value = appState.settings.apiKey;
+                els.inputModel.value = appState.settings.modelId;
                 els.modalSettings.showModal();
                 return;
             }
@@ -313,7 +317,7 @@
                     })
                 });
 
-                // CRITICAL FIX 2: Anti-Crash JSON Logic
+                // Anti-Crash JSON Logic (Maintained)
                 const text = await response.text();
                 if (!response.ok) {
                     alert("API Error: " + text);
@@ -360,9 +364,9 @@
             els.btnCloseSettings.addEventListener('click', () => els.modalSettings.close());
             els.btnSaveSettings.addEventListener('click', () => {
                 appState.settings = {
-                    apiUrl: els.inputUrl.value.trim() || DEFAULT_API_URL,
+                    apiUrl: els.inputUrl.value.trim(),
                     apiKey: els.inputKey.value.trim(),
-                    modelId: els.inputModel.value.trim() || DEFAULT_MODEL
+                    modelId: els.inputModel.value.trim()
                 };
                 saveState();
                 els.modalSettings.close();
